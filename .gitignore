@@ -5,6 +5,9 @@
 # Atomic-write temp files from split-pdf.py
 *.part
 
+# Per-job retry counters
+*.attempts
+
 # Logs and macOS cruft
 watcher.log
 airprint-bridge.log

@@ -91,6 +91,11 @@ launchctl load   ~/Library/LaunchAgents/com.konstantinschubert.print-watcher.pli
 ## Notes
 
 - Only `*.pdf` files are handled (case-insensitive).
-- If a print command fails the file is left in place and retried on the next poll.
+- If a print/split command fails the file is left in place and retried on the
+  next poll. After `MAX_ATTEMPTS` (default 3) it's moved to a `failed/` subfolder
+  so a bad PDF can't spin in the retry loop forever. Retry counts are kept in
+  a `<file>.attempts` sidecar and cleared on success/quarantine.
 - `split-by-size` writes its output atomically (via a `.part` temp file), so the
   watcher never grabs a half-written PDF.
+- The watcher runs under the macOS system bash (3.2), so the script avoids
+  bash-4 features like associative arrays.
