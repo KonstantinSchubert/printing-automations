@@ -7,6 +7,7 @@
 
 # Logs and macOS cruft
 watcher.log
+airprint-bridge.log
 .DS_Store
 
 # But always keep the watch folders themselves (their .gitkeep placeholders)

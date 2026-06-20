@@ -49,9 +49,32 @@ LABEL_MEDIA="w283h567" ./print-labels.sh label FILE.pdf
 - `watch-and-print.sh` — the folder watcher (plain-bash polling, no deps)
 - `print-labels.sh` — sends a PDF to the right CUPS queue via `lp`
 - `split-pdf.py` — splits a PDF by page size; run via `uv` with `pypdf`
+- `airprint-bridge.sh` — advertises the Brother as an AirPrint printer (see below)
 - `watcher.log` — activity log (`tail -f watcher.log` to watch live)
 - `~/Library/LaunchAgents/com.konstantinschubert.print-watcher.plist` — runs the
   watcher at login and restarts it if it crashes
+- `~/Library/LaunchAgents/com.konstantinschubert.airprint-bridge.plist` — runs the
+  AirPrint bridge at login
+
+## AirPrint (Brother printer on iPhone/iPad)
+
+The Brother HL-2250DN has no AirPrint firmware, so the Mac shares it. Two pieces:
+
+1. The CUPS queue is shared: global sharing on (`cupsctl` → `_share_printers=1`)
+   plus `sudo lpadmin -p Brother_HL_2250DN_series -o printer-is-shared=true`.
+2. `airprint-bridge.sh` registers a Bonjour `_ipp._tcp` service **with the
+   `_universal` AirPrint subtype and a `URF` key** — the flags Apple's `cupsd`
+   omits for a Generic-PCL queue. Your Mac does the actual rasterization.
+
+The Mac must be **awake** for iOS devices to print through it (it's the
+rasterizer). Disable sleep / enable wake-for-network if you want it always
+reachable.
+
+Verify it's being advertised:
+
+```sh
+dns-sd -B _universal._sub._ipp._tcp   # should list "Brother HL-2250DN (AirPrint)"
+```
 
 ## Managing the watcher
 
