@@ -22,6 +22,11 @@ echo "[$(date)] Registering AirPrint bridge for $QUEUE as \"$NAME\" ..."
 
 # -R registers a service. Appending ",_universal" puts it in the AirPrint
 # browse domain that iOS/iPadOS scans. This call blocks until killed.
+#
+# NOTE: do NOT advertise a "TLS=" key here. This is a plaintext _ipp service on
+# port 631 with no _ipps endpoint; advertising TLS makes iOS attempt the job
+# over encryption that doesn't exist, and cupsd rejects Create-Job with
+# client-error-not-authorized (Validate-Job still passes — confusing to debug).
 exec dns-sd -R "$NAME" "_ipp._tcp,_universal" local "$PORT" \
   txtvers=1 \
   qtotal=1 \
@@ -34,7 +39,6 @@ exec dns-sd -R "$NAME" "_ipp._tcp,_universal" local "$PORT" \
   pdl="application/pdf,image/urf,image/pwg-raster,image/jpeg" \
   URF="W8,SRGB24,CP1,RS300,DM1,IS1,MT1-3-4-5-8,OB10,PQ4,V1.4" \
   UUID="$UUID" \
-  TLS=1.2 \
   Color=F \
   Duplex=T \
   Scan=F \
