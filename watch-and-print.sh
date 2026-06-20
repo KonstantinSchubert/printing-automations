@@ -6,6 +6,13 @@
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PRINT_SCRIPT="$SCRIPT_DIR/print-labels.sh"
 SPLIT_SCRIPT="$SCRIPT_DIR/split-pdf.py"
+
+# launchd runs us with a minimal PATH that omits ~/.local/bin, so `uv` (used by
+# the splitter) isn't found. Resolve it explicitly: prefer PATH, else the
+# standard install location.
+UV="$(command -v uv || true)"
+[ -z "$UV" ] && [ -x "$HOME/.local/bin/uv" ] && UV="$HOME/.local/bin/uv"
+[ -z "$UV" ] && UV="uv"  # last resort; split path will error+log if truly missing
 A4_DIR="$SCRIPT_DIR/a4"
 LABELS_DIR="$SCRIPT_DIR/labels"
 SPLIT_DIR="$SCRIPT_DIR/split-by-size"
@@ -50,7 +57,7 @@ process_split_dir() {
     echo "[$(date)] Splitting by size: $f"
     # Splits pages into A4/label groups and drops each into the
     # a4/ and labels/ folders, which the loops below then print.
-    if uv run --quiet "$SPLIT_SCRIPT" "$f" "$A4_DIR" "$LABELS_DIR"; then
+    if "$UV" run --quiet "$SPLIT_SCRIPT" "$f" "$A4_DIR" "$LABELS_DIR"; then
       mv "$f" "$SPLIT_DONE/" && echo "[$(date)] Split done -> $SPLIT_DONE/$(basename "$f")"
       cleanup_done "$SPLIT_DONE"
     else
