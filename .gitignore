@@ -1,0 +1,13 @@
+# Ignore all PDFs — these are transient print jobs, not source.
+*.pdf
+*.PDF
+
+# Atomic-write temp files from split-pdf.py
+*.part
+
+# Logs and macOS cruft
+watcher.log
+.DS_Store
+
+# But always keep the watch folders themselves (their .gitkeep placeholders)
+!.gitkeep
