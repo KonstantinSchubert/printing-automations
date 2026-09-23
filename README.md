@@ -49,12 +49,45 @@ LABEL_MEDIA="w283h567" ./print-labels.sh label FILE.pdf
 - `watch-and-print.sh` — the folder watcher (plain-bash polling, no deps)
 - `print-labels.sh` — sends a PDF to the right CUPS queue via `lp`
 - `split-pdf.py` — splits a PDF by page size; run via `uv` with `pypdf`
+- `pdf-to-tspl.py` — converts a label PDF to raw TSPL (see below)
 - `airprint-bridge.sh` — advertises the Brother as an AirPrint printer (see below)
 - `watcher.log` — activity log (`tail -f watcher.log` to watch live)
 - `~/Library/LaunchAgents/com.konstantinschubert.print-watcher.plist` — runs the
   watcher at login and restarts it if it crashes
 - `~/Library/LaunchAgents/com.konstantinschubert.airprint-bridge.plist` — runs the
   AirPrint bridge at login
+
+## Label printer: no Inateck driver, no Rosetta
+
+Inateck only ever shipped an **x86_64** CUPS filter
+(`/Library/Printers/INATECK/Filter/rastertolabel`, 2020). On Apple Silicon that
+ran under Rosetta; macOS 27 dropped it, so CUPS fails with
+`com.apple.badarch-error` and nothing prints.
+
+That filter turned out to be a modified copy of CUPS' own `rastertolabel.c`
+with **TSPL** (TSC Printer Language) support added. So instead of depending on
+an Intel binary, `pdf-to-tspl.py` generates the TSPL itself — natively — and
+`print-labels.sh` sends it with `lp -o raw`, which bypasses the CUPS filter
+chain completely. Nothing Intel is involved, and it survives OS updates.
+
+The emitted sequence (extracted from the original filter):
+
+```
+SIZE <w> mm,<h> mm / GAP 3 mm,0 mm / DIRECTION 0,0 / REFERENCE 0,0
+DENSITY 8 / SPEED 4 / CLS
+BITMAP 0,0,<width_bytes>,<height_dots>,1,<packed 1bpp data>
+PRINT 1,1
+```
+
+Tuning knobs (env vars for `print-labels.sh`):
+
+- `LABEL_SIZE_MM` — physical stock size, default `100x200`. The PDF artwork is
+  often slightly smaller (99 mm), so this is pinned to the roll, not the page.
+- `LABEL_USE_DRIVER=1` — fall back to the old Inateck driver path (only works
+  if Rosetta is installed).
+
+Darkness/speed default to `DENSITY 8` / `SPEED 4`; change via `--density` /
+`--speed` on `pdf-to-tspl.py`.
 
 ## AirPrint (Brother printer on iPhone/iPad)
 
