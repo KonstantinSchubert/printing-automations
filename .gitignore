@@ -15,3 +15,6 @@ airprint-bridge.log
 
 # But always keep the watch folders themselves (their .gitkeep placeholders)
 !.gitkeep
+
+# Self-healing sharing watchdog log
+printer-share.log
