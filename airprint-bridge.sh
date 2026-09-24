@@ -27,6 +27,12 @@ echo "[$(date)] Registering AirPrint bridge for $QUEUE as \"$NAME\" ..."
 # port 631 with no _ipps endpoint; advertising TLS makes iOS attempt the job
 # over encryption that doesn't exist, and cupsd rejects Create-Job with
 # client-error-not-authorized (Validate-Job still passes — confusing to debug).
+#
+# NOTE: do NOT list "image/urf" in pdl either. Every urf rule in CUPS'
+# mime.convs has image/urf as the *destination* (rastertourf, cgpdftoraster) --
+# there is no filter that consumes incoming urf. Claiming to accept it makes
+# iOS send urf, which then prints at the wrong scale. The pdl below mirrors
+# what macOS' own shared-printer advert offers, which is the known-good set.
 exec dns-sd -R "$NAME" "_ipp._tcp,_universal" local "$PORT" \
   txtvers=1 \
   qtotal=1 \
@@ -36,7 +42,7 @@ exec dns-sd -R "$NAME" "_ipp._tcp,_universal" local "$PORT" \
   note="Mac mini" \
   adminurl="http://localhost:631/printers/$QUEUE" \
   priority=0 \
-  pdl="application/pdf,image/urf,image/pwg-raster,image/jpeg" \
+  pdl="application/pdf,image/pwg-raster,image/jpeg,image/png" \
   URF="W8,SRGB24,CP1,RS300,DM1,IS1,MT1-3-4-5-8,OB10,PQ4,V1.4" \
   UUID="$UUID" \
   Color=F \
