@@ -14,14 +14,12 @@
     <string>/Users/konstantinschubert/printing/ensure-printer-shared.sh</string>
   </array>
 
-  <!-- At login: catches the reset that macOS updates leave behind. -->
+  <!-- Runs once at login and exits -- no polling, no resident process.
+       Every reset observed so far came from a macOS update or reboot, so
+       login is exactly when the repair is needed. If the flag ever turns
+       out to flip mid-session, add a StartInterval here (seconds). -->
   <key>RunAtLoad</key>
   <true/>
-
-  <!-- Every 10 minutes: catches a reset that happens while running.
-       The script exits silently when the flag is already true. -->
-  <key>StartInterval</key>
-  <integer>600</integer>
 
   <key>StandardOutPath</key>
   <string>/Users/konstantinschubert/printing/printer-share.log</string>
